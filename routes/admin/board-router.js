@@ -4,18 +4,15 @@ const router = express.Router()
 const {
   error
 } = require('../../modules/util')
-const e = require('express')
 
 router.get('/', (req, res, next) => {
   const boardType = req.query.boardType || 'default'
   if (type === 'create') {
     res.render('admin/board/board-form', {
-      css: 'admin-board',
       boardType
     })
   } else {
     res.render('admin/board/board-list', {
-      css: 'admin-board',
       boardType
     })
   }
