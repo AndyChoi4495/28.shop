@@ -50,7 +50,7 @@ a:not(.btn) {
 }
 
 .wrapper {
-  width: 96%;
+  width: 100%;
   max-width: 1140px;
   margin: auto;
 }
@@ -70,6 +70,11 @@ a:not(.btn) {
     width: 0.25em;
     background-color: $success-color;
     margin-right: 0.5em;
+  }
+  &.secondary {
+    &:before {
+      background-color: $secondary-color;
+    }
   }
 }
 
