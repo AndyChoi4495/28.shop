@@ -6,6 +6,7 @@ shop.motive.co.kr/admin/
 [GET]     shop.motive.co.kr/admin/main    - 메인 화면
 
 [GET]     shop.motive.co.kr/admin/user?page=1   - 회원리스트
+[GET]     shop.motive.co.kr/admin/user?type=create - 회원리스트
 [GET]     shop.motive.co.kr/admin/user/1 - 회원내용
 [GET]     shop.motive.co.kr/admin/user/1?type=update - 회원내용 수정 화면
 [PUT]     shop.motive.co.kr/admin/user    - 회원내용수정(저장)
@@ -46,4 +47,5 @@ shop.motive.co.kr/admin/
 [DELETE]  shop.motive.co.kr/admin/board/1       - 게시판 삭제
 
 shop.motive.co.kr/api/
+[GET] shop.motive.co.kr/api/verify
 */

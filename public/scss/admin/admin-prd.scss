@@ -1,7 +1,7 @@
 @import '../common';
 .prd-wrapper {
   &.list-wrapper {
-    btn-wrap {
+    .btn-wrap {
       padding: 1em 0 0.5em 0;
       @include flex($h: space-between, $v: center);
     }
@@ -34,7 +34,6 @@
       td.td-icon {
         padding: 0.25em;
         height: 80px;
-        text-align: center;
         img {
           max-width: 100%;
           max-height: 100%;

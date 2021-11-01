@@ -1,19 +1,22 @@
-<%- include('../../inc/head.ejs') %> <%- include('../../inc/header.ejs') %>
+<%- include('../../inc/head.ejs') %>
+<%- include('../../inc/header.ejs') %>
 <section class="order-wrapper form-wrapper wrapper">
-  <h4 class="title bullet my-2">주문 상세</h4>
+  <h4 class="title bullet my-2">
+    주문 상세
+  </h4>
   <form action="/admin/order" method="post">
-    <input type="hidden" name="id" value="1" />
-    <input type="hidden" name="_method" value="PUT" />
+    <input type="hidden" name="id" value="1">
+    <input type="hidden" name="_method" value="PUT">
     <table class="table border-bottom tbl-order">
       <tbody>
         <tr>
-          <td class="title" style="width: 15%">주문번호</td>
+          <td class="title" style="width: 15%;">주문번호</td>
           <td class="content">20211029-123657</td>
         </tr>
         <tr>
           <td class="title">주문자</td>
           <td class="content">
-            <a href="/admin/user/1">andy / 윤석 / 010-8332-8040</a>
+            <a href="/admin/user/1">booldook / 임덕규 / 010-8332-8040</a>
           </td>
         </tr>
         <tr>
@@ -32,7 +35,7 @@
               <tbody>
                 <tr>
                   <td class="td-icon">
-                    <img src="/img/f1.jpg" alt="prd" />
+                    <img src="/img/f1.jpg" alt="prd">
                   </td>
                   <td class="text-left">
                     <a href="/admin/prd/1?type=update">매우 맛있는 아이스크림</a>
@@ -56,11 +59,7 @@
         <tr>
           <td class="title">상태</td>
           <td class="content">
-            <select
-              name="status"
-              class="form-control form-control-sm"
-              style="max-width: 200px"
-            >
+            <select name="status" class="form-control form-control-sm" style="max-width: 200px;">
               <option value="0">미주문처리</option>
               <option value="1">주문완료</option>
               <option value="2">결제완료</option>
