@@ -1,10 +1,16 @@
 const path = require('path');
 const express = require('express');
 const router = express.Router();
+const createError = require('http-errors');
+const bcrypt = require('bcrypt');
 const {
   error,
-  telNumber
+  telNumber,
+  alert
 } = require('../../modules/util');
+const {
+  User
+} = require('../../models');
 
 // 회원리스트
 router.get('/', (req, res, next) => {
@@ -26,6 +32,17 @@ router.get('/:id', (req, res, next) => {
     type: req.query.type || '',
   };
   res.render('admin/user/user-form', ejs);
+});
+
+// 회원 저장
+router.post('/', async (req, res, next) => {
+  try {
+    const user = await User.create(req.body);
+    user.save();
+    res.send(alert('회원가입이 완료되었습니다.', '/admin/user'));
+  } catch (err) {
+    next(createError(err));
+  }
 });
 
 // 회원 수정
