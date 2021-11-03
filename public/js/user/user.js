@@ -1,6 +1,5 @@
 // kakao 우편번호 모듈
 $('#btPostcode').click(openPostcode);
-
 function openPostcode() {
   new daum.Postcode({
     oncomplete: function (data) {

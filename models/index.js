@@ -1,7 +1,9 @@
 const path = require('path');
 const fs = require('fs-extra');
 const Sequelize = require('sequelize');
-const config = require('../config/config.js')[process.env.NODE_ENV || 'development']
+const env = process.env.NODE_ENV || 'development';
+const config = require('../config/config')[env];
+config.timezone = '+09:00';
 const db = {};
 
 const sequelize = new Sequelize(
@@ -13,10 +15,7 @@ const sequelize = new Sequelize(
 fs.readdirSync(__dirname)
   .filter((file) => file !== 'index.js')
   .forEach((file) => {
-    const model = require(path.join(__dirname, file))(
-      sequelize,
-      Sequelize.DataTypes
-    );
+    const model = require(path.join(__dirname, file))(sequelize, Sequelize);
     db[model.name] = model;
   });
 

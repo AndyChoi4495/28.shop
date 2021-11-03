@@ -1,16 +1,79 @@
 const bcrypt = require('bcrypt');
+const { getSeparateString } = require('../modules/util');
+const generateUser = (_users) => {
+  const users = _users.map((v) => {
+    v.addr1 =
+      v.addrPost && v.addrRoad
+        ? `[${v.addrPost}] 
+        ${v.addrRoad || ''} 
+        ${v.addrComment || ''}
+        ${v.addrDetail || ''}`
+        : '';
+    v.addr2 =
+      v.addrPost && v.addrJibun
+        ? `[${v.addrPost}] 
+        ${v.addrJibun}
+        ${v.addrDetail || ''}`
+        : '';
+    v.level = '';
+    switch (v.status) {
+      case '0':
+        v.level = '탈퇴회원';
+        break;
+      case '1':
+        v.level = '유휴회원';
+        break;
+      case '2':
+        v.level = '일반회원';
+        break;
+      case '8':
+        v.level = '관리자';
+        break;
+      case '9':
+        v.level = '최고관리자';
+        break;
+      default:
+        v.level = '회원';
+        break;
+    }
+    return v;
+  });
+  return users;
+};
+const generateWhere = (sequelize, Op, { field, search }) => {
+  let where = search ? { [field]: { [Op.like]: '%' + search + '%' } } : null;
+  if (field === 'tel' && search !== '') {
+    where = sequelize.where(
+      sequelize.fn('replace', sequelize.col('tel'), '-', ''),
+      { [Op.like]: '%' + search.replace(/-/g, '') + '%' }
+    );
+  }
+  if (field === 'addrRoad' && search !== '') {
+    where = {
+      [Op.or]: {
+        addrPost: { [Op.like]: '%' + search + '%' },
+        addrRoad: { [Op.like]: '%' + search + '%' },
+        addrJibun: { [Op.like]: '%' + search + '%' },
+        addrComment: { [Op.like]: '%' + search + '%' },
+        addrDetail: { [Op.like]: '%' + search + '%' },
+      },
+    };
+  }
+  return where;
+};
 
-module.exports = (sequelize, DataType) => {
+module.exports = (sequelize, { DataTypes, Op }) => {
   const User = sequelize.define(
-    'User', {
+    'User',
+    {
       id: {
-        type: DataType.INTEGER(10).UNSIGNED,
+        type: DataTypes.INTEGER(10).UNSIGNED,
         primaryKey: true,
         autoIncrement: true,
         allowNull: false,
       },
       userid: {
-        type: DataType.STRING(24),
+        type: DataTypes.STRING(24),
         allowNull: false,
         unique: true,
         validate: {
@@ -19,30 +82,28 @@ module.exports = (sequelize, DataType) => {
         },
       },
       userpw: {
-        type: DataType.CHAR(60),
+        type: DataTypes.CHAR(60),
         allowNull: false,
-        set(value) {
-          const {
-            BCRYPT_SALT: salt,
-            BCRYPT_ROUND: rnd
-          } = process.env;
+        /* set(value) {
+          const { BCRYPT_SALT: salt, BCRYPT_ROUND: rnd } = process.env;
           const hash = bcrypt.hashSync(value + salt, Number(rnd));
           this.setDataValue('userpw', hash);
-        },
+        }, */
       },
       username: {
-        type: DataType.STRING(255),
+        type: DataTypes.STRING(255),
         allowNull: false,
       },
       email: {
-        type: DataType.STRING(255),
+        type: DataTypes.STRING(255),
         allowNull: false,
+        unique: true,
         validate: {
           isEmail: true,
         },
       },
       status: {
-        type: DataType.ENUM,
+        type: DataTypes.ENUM,
         /* 
         0: 탈퇴
         1: 유휴
@@ -57,39 +118,34 @@ module.exports = (sequelize, DataType) => {
         defaultValue: '2',
       },
       addrPost: {
-        type: DataType.CHAR(5),
+        type: DataTypes.CHAR(5),
       },
       addrRoad: {
-        type: DataType.STRING(255),
+        type: DataTypes.STRING(255),
       },
       addrJibun: {
-        type: DataType.STRING(255),
+        type: DataTypes.STRING(255),
       },
       addrComment: {
-        type: DataType.STRING(255),
+        type: DataTypes.STRING(255),
       },
       addrDetail: {
-        type: DataType.STRING(255),
+        type: DataTypes.STRING(255),
+      },
+      tel: {
+        type: DataTypes.STRING(14),
       },
       tel1: {
-        type: DataType.STRING(4),
-        validate: {
-          len: [2, 4],
-        },
+        type: DataTypes.VIRTUAL,
       },
       tel2: {
-        type: DataType.STRING(4),
-        validate: {
-          len: [3, 4],
-        },
+        type: DataTypes.VIRTUAL,
       },
       tel3: {
-        type: DataType.STRING(4),
-        validate: {
-          len: 4,
-        },
+        type: DataTypes.VIRTUAL,
       },
-    }, {
+    },
+    {
       charset: 'utf8',
       collate: 'utf8_general_ci',
       tableName: 'user',
@@ -98,8 +154,44 @@ module.exports = (sequelize, DataType) => {
   );
 
   User.associate = (models) => {
-    User.hasMany(models.Board);
+    User.hasMany(models.Board, {
+      foreignKey: {
+        name: 'user_id',
+        allowNull: false,
+      },
+      sourceKey: 'id',
+      onUpdate: 'CASCADE',
+      onDelete: 'CASCADE',
+    });
   };
 
+  User.beforeCreate(async (user) => {
+    const { BCRYPT_SALT: salt, BCRYPT_ROUND: rnd } = process.env;
+    const hash = await bcrypt.hash(user.userpw + salt, Number(rnd));
+    user.userpw = hash;
+    user.tel = getSeparateString([user.tel1, user.tel2, user.tel3], '-');
+  });
+
+  User.beforeUpdate(async (user) => {
+    user.tel = getSeparateString([user.tel1, user.tel2, user.tel3], '-');
+  });
+
+  User.getCount = async function (query) {
+    return await this.count({
+      where: generateWhere(sequelize, Op, query),
+    });
+  };
+
+  User.searchUser = async function (query, pager) {
+    let { field = 'id', sort = 'desc' } = query;
+    const rs = await this.findAll({
+      order: [[field || 'id', sort || 'desc']],
+      offset: pager.startIdx,
+      limit: pager.listCnt,
+      where: generateWhere(sequelize, Op, query),
+    });
+    const users = generateUser(rs);
+    return users;
+  };
   return User;
 };
