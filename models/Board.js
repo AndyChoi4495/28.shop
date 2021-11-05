@@ -1,4 +1,9 @@
-module.exports = (sequelize, DataTypes) => {
+const numeral = require('numeral');
+const _ = require('lodash');
+const { dateFormat, relPath } = require('../modules/util');
+const createPager = require('../modules/pager-init');
+
+module.exports = (sequelize, { DataTypes, Op }) => {
   const Board = sequelize.define(
     'Board',
     {
@@ -65,6 +70,60 @@ module.exports = (sequelize, DataTypes) => {
       onUpdate: 'CASCADE',
       onDelete: 'CASCADE',
     });
+  };
+
+  Board.getCount = async function (query) {
+    return await this.count({
+      where: {
+        [Op.and]: [{ ...sequelize.getWhere(query) }, { binit_id: query.boardId }],
+      },
+    });
+  };
+
+  Board.getViewData = function (rs, type) {
+    const data = rs
+      .map((v) => v.toJSON())
+      .map((v) => {
+        v.updatedAt = dateFormat(v.updatedAt, type === 'view' ? 'H' : 'D');
+        v.files = [];
+        if (v.BoardFiles.length) {
+          for (let file of v.BoardFiles) {
+            v.files.push({
+              thumbSrc: relPath(file.saveName),
+              name: file.oriName,
+              id: file.id,
+              type: file.fileType,
+            });
+          }
+          v.files = _.sortBy(v.files, ['type']);
+        }
+        delete v.createdAt;
+        delete v.deletedAt;
+        delete v.BoardFiles;
+        return v;
+      });
+    return data;
+  };
+
+  Board.getLists = async function (query, BoardFile) {
+    let { field, sort, boardId, page, boardType } = query;
+    let listCnt = boardType === 'gallery' ? 12 : 5;
+    let pagerCnt = 5;
+    const totalRecord = await this.getCount(query);
+    const pager = createPager(page, totalRecord, listCnt, pagerCnt);
+
+    const rs = await this.findAll({
+      order: [[field, sort]],
+      offset: pager.startIdx,
+      limit: pager.listCnt,
+      where: {
+        [Op.and]: [{ ...sequelize.getWhere(query) }, { binit_id: boardId }],
+      },
+      include: [{ model: BoardFile, attributes: ['saveName'] }],
+    });
+    const lists = this.getViewData(rs);
+
+    return { lists, pager, totalRecord: numeral(pager.totalRecord).format() };
   };
 
   return Board;

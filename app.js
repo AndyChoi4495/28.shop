@@ -10,20 +10,16 @@ const method = require('./middlewares/method-mw');
 const logger = require('./middlewares/morgan-mw');
 const session = require('./middlewares/session-mw');
 const locals = require('./middlewares/locals-mw');
-const {
-  sequelize
-} = require('./models');
+const { sequelize } = require('./models');
 
 /*************** sequelize init **************/
-require('./modules/sequelize-init')(sequelize);
+require('./modules/sequelize-init')(sequelize, true);
 
 /*************** server init **************/
 require('./modules/server-init')(app, process.env.PORT);
 
 /*************** helmet init **************/
-app.use(helmet({
-  contentSecurityPolicy: false
-}));
+app.use(helmet({ contentSecurityPolicy: false }));
 
 /*************** static init **************/
 app.use('/', express.static(path.join(__dirname, 'public')));
@@ -36,9 +32,7 @@ app.locals.pretty = true;
 
 /*************** middleware ***************/
 app.use(express.json());
-app.use(express.urlencoded({
-  extended: false
-}));
+app.use(express.urlencoded({ extended: false }));
 app.use(method());
 app.use(session(app));
 
@@ -54,11 +48,11 @@ app.use(locals);
 app.use(logger);
 
 /*************** router init **************/
-const adminRouuter = require('./routes/admin');
-const apiRouuter = require('./routes/api');
+const adminRouter = require('./routes/admin');
+const apiRouter = require('./routes/api');
 
-app.use('/admin', adminRouuter);
-app.use('/api', apiRouuter);
+app.use('/admin', adminRouter);
+app.use('/api', apiRouter);
 
 /**************** error init **************/
 const _404Router = require('./routes/error/404-router');
