@@ -1,6 +1,5 @@
 'use strict';
-const numeral = require('numeral')
-
+const numeral = require('numeral');
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     const insertUsers = [];
