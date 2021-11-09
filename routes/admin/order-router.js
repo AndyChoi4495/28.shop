@@ -1,30 +1,42 @@
 const path = require('path')
 const express = require('express')
 const router = express.Router()
-const { error } = require('../../modules/util')
+const isAdmin = require('../../middlewares/auth-mw')
+const {
+  error
+} = require('../../modules/util')
 
-router.get('/', (req, res, next) => {
+router.get('/', isAdmin(8), (req, res, next) => {
   if (req.query.type === 'update') {
-    res.render('admin/order/order-form', { css: 'admin-order' })
+    res.render('admin/order/order-form', {
+      css: 'admin-order'
+    })
   } else {
-    res.render('admin/order/order-list', { css: 'admin-order' })
+    res.render('admin/order/order-list', {
+      css: 'admin-order'
+    })
   }
 })
 
-router.get('/:id', (req, res, next) => {
-  res.render('admin/order/order-form', { css: 'admin-order' })
+router.get('/:id', isAdmin(8), (req, res, next) => {
+  res.render('admin/order/order-form', {
+    css: 'admin-order'
+  })
 })
 
-router.post('/', (req, res, next) => {
+router.post('/', isAdmin(8), (req, res, next) => {
   res.send('/admin/order:POST')
 })
 
-router.put('/', (req, res, next) => {
+router.put('/', isAdmin(8), (req, res, next) => {
   res.send('/admin/order:PUT')
 })
 
-router.delete('/', (req, res, next) => {
+router.delete('/', isAdmin(8), (req, res, next) => {
   res.send('/admin/order:DELETE')
 })
 
-module.exports = { name: '/order', router }
+module.exports = {
+  name: '/order',
+  router
+}

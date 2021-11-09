@@ -1,20 +1,21 @@
 const LocalStrategy = require('passport-local').Strategy
-const { loginUser } = require('../models/auth')
+const {
+	User
+} = require('../models')
 
-const cb = async (userid, passwd, done) => {
+const cb = async (userid, userpw, done) => {
 	try {
-		const { success, user } = await loginUser(userid, passwd)
-		if(success) done(null, user)
+		const user = await User.loginUser(userid, userpw)
+		if (user) done(null, user)
 		else done(null, false, '아이디와 패스워드를 확인하세요.')
-	}
-	catch(err) {
+	} catch (err) {
 		done(err)
 	}
 }
 
 const fields = {
 	usernameField: 'userid',
-	passwordField: 'passwd'
+	passwordField: 'userpw'
 }
 
 const localStrategy = new LocalStrategy(fields, cb)

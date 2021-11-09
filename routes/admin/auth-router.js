@@ -1,21 +1,40 @@
 const path = require('path')
 const express = require('express')
+const createError = require('http-errors')
+const passport = require('passport')
 const router = express.Router()
 const {
-  error
+  error,
+  alert
 } = require('../../modules/util')
 
 router.get('/login', (req, res, next) => {
-  res.send('login')
   res.render('admin/auth/login', {})
 })
 
 router.post('/login', (req, res, next) => {
-  res.send('logout')
+  try {
+    const done = (err, user, msg) => {
+      if (err) return next(err)
+      else if (!user) return res.send(alert(msg, '/admin'))
+      else {
+        req.login(user, err => {
+          if (err) return next(err)
+          else return res.send(alert('로그인 되었습니다.', '/admin'))
+        })
+      }
+    }
+    // 미들웨어를 라우터에서 실행하는 로직
+    passport.authenticate('local', done)(req, res, next);
+  } catch (err) {
+    createError(err)
+  }
 })
 
 router.get('/logout', (req, res, next) => {
-  res.send('logout')
+  req.logout()
+  res.locals.user = null;
+  res.send(alert('로그아웃 되었습니다.', '/admin/auth/login'))
 })
 
 module.exports = {

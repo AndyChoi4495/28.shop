@@ -11,29 +11,30 @@
 
 
 const local = require('./local-strategy')
-const kakao = require('./kakao-strategy')
-const naver = require('./naver-strategy')
-const { findUser } = require('../models/auth')
+const {
+	User
+} = require('../models')
 
 const serialize = (user, done) => {
-	done(null, user.idx)
+	done(null, user.id)
 }
 
-const deserialize = async (idx, done) => {
+const deserialize = async (id, done) => {
 	try {
-		const { success, user } = await findUser('idx', idx)
-		if(success) done(null, user)
+		const user = await User.findOne({
+			where: {
+				id
+			}
+		})
+		if (user) done(null, user)
 		else done(null, false, '사용자 정보가 없습니다.')
-	}
-	catch(err) {
+	} catch (err) {
 		done(err)
 	}
 }
 
 module.exports = passport => {
-	passport.serializeUser(serialize)				// req.user -> idx (cookie -> session)
-	passport.deserializeUser(deserialize)		// req.user <- DB user 정보 (session)
+	passport.serializeUser(serialize)
+	passport.deserializeUser(deserialize)
 	local(passport)
-	kakao(passport)
-	naver(passport)
 }
