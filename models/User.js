@@ -1,19 +1,12 @@
 const bcrypt = require('bcrypt');
 const numeral = require('numeral');
-const {
-  getSeparateString
-} = require('../modules/util');
+const { getSeparateString } = require('../modules/util');
 const createPager = require('../modules/pager-init');
-const {
-  functions
-} = require('lodash');
 
-module.exports = (sequelize, {
-  DataTypes,
-  Op
-}) => {
+module.exports = (sequelize, { DataTypes, Op }) => {
   const User = sequelize.define(
-    'User', {
+    'User',
+    {
       id: {
         type: DataTypes.INTEGER(10).UNSIGNED,
         primaryKey: true,
@@ -92,7 +85,8 @@ module.exports = (sequelize, {
       tel3: {
         type: DataTypes.VIRTUAL,
       },
-    }, {
+    },
+    {
       charset: 'utf8',
       collate: 'utf8_general_ci',
       tableName: 'user',
@@ -110,10 +104,16 @@ module.exports = (sequelize, {
       onUpdate: 'CASCADE',
       onDelete: 'CASCADE',
     });
-  };
-
-  User.associate = (models) => {
     User.hasMany(models.BoardCounter, {
+      foreignKey: {
+        name: 'user_id',
+        allowNull: true,
+      },
+      sourceKey: 'id',
+      onUpdate: 'CASCADE',
+      onDelete: 'CASCADE',
+    });
+    User.hasMany(models.BoardComment, {
       foreignKey: {
         name: 'user_id',
         allowNull: true,
@@ -125,10 +125,7 @@ module.exports = (sequelize, {
   };
 
   User.beforeCreate(async (user) => {
-    const {
-      BCRYPT_SALT: salt,
-      BCRYPT_ROUND: rnd
-    } = process.env;
+    const { BCRYPT_SALT: salt, BCRYPT_ROUND: rnd } = process.env;
     const hash = await bcrypt.hash(user.userpw + salt, Number(rnd));
     user.userpw = hash;
     user.tel = getSeparateString([user.tel1, user.tel2, user.tel3], '-');
@@ -139,20 +136,13 @@ module.exports = (sequelize, {
   });
 
   User.loginUser = async function (userid, userpw) {
-    const {
-      BCRYPT_SALT: salt,
-      BCRYPT_ROUND: rnd
-    } = process.env;
-    const user = await this.findOne({
-      where: {
-        userid
-      }
-    })
+    const { BCRYPT_SALT: salt } = process.env;
+    const user = await this.findOne({ where: { userid } });
     if (user && user.userpw) {
-      const success = await bcrypt.compare(userpw + salt, user.userpw)
+      const success = await bcrypt.compare(userpw + salt, user.userpw);
       return success ? user : null;
     } else return null;
-  }
+  };
 
   User.getCount = async function (query) {
     return await this.count({
@@ -161,17 +151,13 @@ module.exports = (sequelize, {
   };
 
   User.getLists = async function (query) {
-    let {
-      field = 'id', sort = 'desc', page = 1
-    } = query;
+    let { field = 'id', sort = 'desc', page = 1 } = query;
     // pager Query
     const totalRecord = await this.getCount(query);
     const pager = createPager(page, totalRecord, (_listCnt = 5), (_pagerCnt = 5));
     // find Query
     const rs = await this.findAll({
-      order: [
-        [field || 'id', sort || 'desc']
-      ],
+      order: [[field || 'id', sort || 'desc']],
       offset: pager.startIdx,
       limit: pager.listCnt,
       where: sequelize.getWhere(query),
@@ -180,18 +166,18 @@ module.exports = (sequelize, {
       .map((v) => v.toJSON())
       .map((v) => {
         v.addr1 =
-          v.addrPost && v.addrRoad ?
-          `[${v.addrPost}] 
+          v.addrPost && v.addrRoad
+            ? `[${v.addrPost}] 
         ${v.addrRoad || ''} 
         ${v.addrComment || ''}
-        ${v.addrDetail || ''}` :
-          '';
+        ${v.addrDetail || ''}`
+            : '';
         v.addr2 =
-          v.addrPost && v.addrJibun ?
-          `[${v.addrPost}] 
+          v.addrPost && v.addrJibun
+            ? `[${v.addrPost}] 
         ${v.addrJibun}
-        ${v.addrDetail || ''}` :
-          '';
+        ${v.addrDetail || ''}`
+            : '';
         v.level = '';
         switch (v.status) {
           case '0':
@@ -218,11 +204,7 @@ module.exports = (sequelize, {
         }
         return v;
       });
-    return {
-      lists,
-      pager,
-      totalRecord: numeral(pager.totalRecord).format()
-    };
+    return { lists, pager, totalRecord: numeral(pager.totalRecord).format() };
   };
 
   return User;
