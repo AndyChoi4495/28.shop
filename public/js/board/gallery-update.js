@@ -5,17 +5,16 @@ function onDeleteFile(id, el) {
       .then(onSucess)
       .catch(onError);
   }
-
   function onSucess(r) {
     if (r.data.code == 200) {
-      var html = `< input type = "file"
-        name = "pds"
-        class = "form-control-file mb-2" >`
-      $(el).parent().after(html);
-      $(el).parent().empty();
+      var html =
+        '<input type="file" name="' +
+        $(el).data('name') +
+        '" class="form-control-file mb-2" />';
+      $(el).parent().after(html); // $(el).parent().parent().append(html);
+      $(el).parent().remove();
     }
   }
-
   function onError(err) {
     console.log(err);
     console.log(err.response);
