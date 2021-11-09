@@ -1,12 +1,17 @@
 const numeral = require('numeral');
 const _ = require('lodash');
-const { dateFormat, relPath } = require('../modules/util');
+const {
+  dateFormat,
+  relPath
+} = require('../modules/util');
 const createPager = require('../modules/pager-init');
 
-module.exports = (sequelize, { DataTypes, Op }) => {
+module.exports = (sequelize, {
+  DataTypes,
+  Op
+}) => {
   const Board = sequelize.define(
-    'Board',
-    {
+    'Board', {
       id: {
         type: DataTypes.INTEGER(10).UNSIGNED,
         primaryKey: true,
@@ -24,8 +29,11 @@ module.exports = (sequelize, { DataTypes, Op }) => {
       content: {
         type: DataTypes.TEXT,
       },
-    },
-    {
+      readCounter: {
+        type: DataTypes.INTEGER(10).UNSIGNED,
+        defaulValue: 0,
+      },
+    }, {
       charset: 'utf8',
       collate: 'utf8_general_ci',
       tableName: 'board',
@@ -70,12 +78,25 @@ module.exports = (sequelize, { DataTypes, Op }) => {
       onUpdate: 'CASCADE',
       onDelete: 'CASCADE',
     });
+    Board.hasMany(models.BoardCounter, {
+      foreignKey: {
+        name: 'board_id',
+        allowNull: false,
+      },
+      sourceKey: 'id',
+      onUpdate: 'CASCADE',
+      onDelete: 'CASCADE',
+    });
   };
 
   Board.getCount = async function (query) {
     return await this.count({
       where: {
-        [Op.and]: [{ ...sequelize.getWhere(query) }, { binit_id: query.boardId }],
+        [Op.and]: [{
+          ...sequelize.getWhere(query)
+        }, {
+          binit_id: query.boardId
+        }],
       },
     });
   };
@@ -85,17 +106,20 @@ module.exports = (sequelize, { DataTypes, Op }) => {
       .map((v) => v.toJSON())
       .map((v) => {
         v.updatedAt = dateFormat(v.updatedAt, type === 'view' ? 'H' : 'D');
+        v.readCounter = numeral(v.readCounter).format();
+        v.imgs = [];
         v.files = [];
         if (v.BoardFiles.length) {
           for (let file of v.BoardFiles) {
-            v.files.push({
+            let obj = {
               thumbSrc: relPath(file.saveName),
               name: file.oriName,
               id: file.id,
               type: file.fileType,
-            });
+            }
+            if (obj.type === 'F') v.files.push(obj);
+            else v.imgs.push(obj)
           }
-          v.files = _.sortBy(v.files, ['type']);
         }
         delete v.createdAt;
         delete v.deletedAt;
@@ -106,24 +130,43 @@ module.exports = (sequelize, { DataTypes, Op }) => {
   };
 
   Board.getLists = async function (query, BoardFile) {
-    let { field, sort, boardId, page, boardType } = query;
+    let {
+      field,
+      sort,
+      boardId,
+      page,
+      boardType
+    } = query;
     let listCnt = boardType === 'gallery' ? 12 : 5;
     let pagerCnt = 5;
     const totalRecord = await this.getCount(query);
     const pager = createPager(page, totalRecord, listCnt, pagerCnt);
 
     const rs = await this.findAll({
-      order: [[field, sort]],
+      order: [
+        [field, sort]
+      ],
       offset: pager.startIdx,
       limit: pager.listCnt,
       where: {
-        [Op.and]: [{ ...sequelize.getWhere(query) }, { binit_id: boardId }],
+        [Op.and]: [{
+          ...sequelize.getWhere(query)
+        }, {
+          binit_id: boardId
+        }],
       },
-      include: [{ model: BoardFile, attributes: ['saveName'] }],
+      include: [{
+        model: BoardFile,
+        attributes: ['saveName']
+      }],
     });
     const lists = this.getViewData(rs);
 
-    return { lists, pager, totalRecord: numeral(pager.totalRecord).format() };
+    return {
+      lists,
+      pager,
+      totalRecord: numeral(pager.totalRecord).format()
+    };
   };
 
   return Board;
