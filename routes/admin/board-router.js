@@ -7,7 +7,7 @@ const uploader = require('../../middlewares/multer-mw');
 const afterUploader = require('../../middlewares/after-multer-mw');
 const counter = require('../../middlewares/board-counter-mw');
 const queries = require('../../middlewares/query-mw');
-const { Board, BoardFile, BoardInit } = require('../../models');
+const { Board, BoardFile, BoardComment } = require('../../models');
 const { moveFile } = require('../../modules/util');
 
 // 신규글 작성
@@ -44,12 +44,17 @@ router.get('/:id', boardInit(), queries(), counter, async (req, res, next) => {
 // 상세보기
 router.get('/:id', boardInit(), queries(), async (req, res, next) => {
   try {
-    const lists = await Board.findAll({
-      where: { id: req.params.id },
-      include: [{ model: BoardFile }],
+    const { lists, pager } = await Board.getList(
+      req.params.id,
+      req.query,
+      BoardFile,
+      BoardComment
+    );
+    // res.json({ list: Board.getViewData(lists)[0], pager });
+    res.render('admin/board/board-view', {
+      list: Board.getViewData(lists)[0],
+      pager,
     });
-    // res.json(Board.getViewData(lists));
-    res.render('admin/board/board-view', { list: Board.getViewData(lists)[0] });
   } catch (err) {
     next(createError(err));
   }
