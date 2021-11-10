@@ -7,22 +7,41 @@ const uploader = require('../../middlewares/multer-mw');
 const afterUploader = require('../../middlewares/after-multer-mw');
 const counter = require('../../middlewares/board-counter-mw');
 const queries = require('../../middlewares/query-mw');
-const { Board, BoardFile, BoardComment } = require('../../models');
-const { moveFile } = require('../../modules/util');
+const {
+  Board,
+  BoardFile,
+  BoardComment
+} = require('../../models');
+const {
+  moveFile
+} = require('../../modules/util');
 
 // 신규글 작성
 router.get('/', boardInit(), queries(), (req, res, next) => {
-  const { type } = req.query;
+  const {
+    type
+  } = req.query;
   if (type === 'create') {
-    res.render('admin/board/board-form', { type, binit: req.binit });
+    res.render('admin/board/board-form', {
+      type,
+      binit: req.binit
+    });
   } else next();
 });
 
 // 리스트
 router.get('/', boardInit(), queries(), async (req, res, next) => {
   try {
-    const { lists, pager, totalRecord } = await Board.getLists(req.query, BoardFile);
-    res.render('admin/board/board-list', { lists, pager, totalRecord });
+    const {
+      lists,
+      pager,
+      totalRecord
+    } = await Board.getLists(req.query, BoardFile);
+    res.render('admin/board/board-list', {
+      lists,
+      pager,
+      totalRecord
+    });
   } catch (err) {
     next(createError(err));
   }
@@ -30,21 +49,32 @@ router.get('/', boardInit(), queries(), async (req, res, next) => {
 
 // 상세수정
 router.get('/:id', boardInit(), queries(), counter, async (req, res, next) => {
-  const { type } = req.query;
+  const {
+    type
+  } = req.query;
   if (type === 'update') {
     const lists = await Board.findAll({
-      where: { id: req.params.id },
-      include: [{ model: BoardFile }],
+      where: {
+        id: req.params.id
+      },
+      include: [{
+        model: BoardFile
+      }],
     });
     // res.json(Board.getViewData(lists)[0]);
-    res.render('admin/board/board-update', { list: Board.getViewData(lists)[0] });
+    res.render('admin/board/board-update', {
+      list: Board.getViewData(lists)[0]
+    });
   } else next();
 });
 
 // 상세보기
 router.get('/:id', boardInit(), queries(), async (req, res, next) => {
   try {
-    const { lists, pager } = await Board.getList(
+    const {
+      lists,
+      pager
+    } = await Board.getList(
       req.params.id,
       req.query,
       BoardFile,
@@ -63,14 +93,22 @@ router.get('/:id', boardInit(), queries(), async (req, res, next) => {
 // 게시물 저장/수정
 router.post(
   '/',
-  uploader.fields([{ name: 'img' }, { name: 'pds' }]),
+  uploader.fields([{
+    name: 'img'
+  }, {
+    name: 'pds'
+  }]),
   afterUploader(['img', 'pds']),
   boardInit('body'),
   queries('body'),
   async (req, res, next) => {
     try {
       if (req.body.type === 'update') {
-        await Board.update(req.body, { where: { id: req.body.id } });
+        await Board.update(req.body, {
+          where: {
+            id: req.body.id
+          }
+        });
         req.files.forEach((file) => (file.board_id = req.body.id));
         const files = await BoardFile.bulkCreate(req.files);
         // res.json({ file: req.files, req: req.body, locals: res.locals });
@@ -91,13 +129,30 @@ router.post(
 
 router.delete('/', boardInit(), queries('body'), async (req, res, next) => {
   try {
-    await Board.destroy({ where: { id: req.body.id } });
+    await Board.destroy({
+      where: {
+        id: req.body.id
+      },
+    });
     const files = await BoardFile.findAll({
       attributes: ['saveName'],
-      where: { board_id: req.body.id },
+      where: {
+        board_id: req.body.id
+      },
     });
-    await BoardFile.destroy({ where: { board_id: req.body.id } });
-    for (let { saveName } of files) {
+    await BoardFile.destroy({
+      where: {
+        board_id: req.body.id
+      }
+    });
+    await BoardComment.destroy({
+      where: {
+        board_id: req.body.id
+      }
+    });
+    for (let {
+        saveName
+      } of files) {
       await moveFile(saveName);
     }
     res.redirect(res.locals.goList);
@@ -106,4 +161,7 @@ router.delete('/', boardInit(), queries('body'), async (req, res, next) => {
   }
 });
 
-module.exports = { name: '/board', router };
+module.exports = {
+  name: '/board',
+  router
+};
