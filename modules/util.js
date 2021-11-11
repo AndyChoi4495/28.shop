@@ -1,6 +1,9 @@
 const path = require('path');
 const fs = require('fs-extra');
 const moment = require('moment');
+const {
+  functions
+} = require('lodash');
 
 const location = (src) => path.join(__dirname, '../', src);
 
@@ -49,7 +52,12 @@ const imgExt = ['jpg', 'jpeg', 'gif', 'png'];
 const mediaExt = ['mp3', 'mp4'];
 const docExt = ['ppt', 'pptx', 'xls', 'xlsx', 'doc', 'docx', 'hwp', 'pdf'];
 const zipExt = ['zip', 'alz'];
-const exts = { imgExt, mediaExt, docExt, zipExt };
+const exts = {
+  imgExt,
+  mediaExt,
+  docExt,
+  zipExt
+};
 
 const relPath = (file) => `/uploads/${file.split('_')[0]}/${file}`;
 const absPath = (file) =>
@@ -122,6 +130,10 @@ const dateFormat = (_date = new Date(), _type = 'D') => {
   }
   return moment(_date).format(type);
 };
+
+function findChildId(id, obj) {
+
+}
 
 module.exports = {
   location,
