@@ -1,9 +1,6 @@
 const path = require('path');
 const fs = require('fs-extra');
 const moment = require('moment');
-const {
-  functions
-} = require('lodash');
 
 const location = (src) => path.join(__dirname, '../', src);
 
@@ -64,11 +61,7 @@ const absPath = (file) =>
   path.join(__dirname, `../storages/${file.split('_')[0]}/${file}`);
 const moveFile = async (file) => {
   try {
-    let savePath = path.join(
-      __dirname,
-      '../storages-remove',
-      file.split('_')[0]
-    );
+    let savePath = path.join(__dirname, '../storages-remove', file.split('_')[0]);
     let oldPath = absPath(file);
     await fs.ensureDir(savePath); // D:\ ~ /210909
     savePath = path.join(savePath, file); // D:\ ~ /210909/210909_fjk2134-askdf2103.jpg
@@ -131,8 +124,34 @@ const dateFormat = (_date = new Date(), _type = 'D') => {
   return moment(_date).format(type);
 };
 
-function findChildId(id, obj) {
+// _obj에서 id에 해당하는 객체를 찾는순간 멈추는 재귀함수
+function findObj(_obj, id) {
+  let a = null;
 
+  function findInner(_obj, id) {
+    if (_obj.id !== id) {
+      if (_obj.children) {
+        for (let v of _obj.children) {
+          findInner(v, id);
+        }
+      }
+    } else {
+      a = _obj;
+    }
+    return a;
+  }
+  return findInner(_obj, id);
+}
+
+// _obj의 자식들의 id를 리턴하는 재귀함수
+function findChildId(_obj, arr) {
+  if (_obj.children) {
+    for (let v of _obj.children) {
+      findChildId(v, arr);
+    }
+  }
+  arr.push(_obj.id);
+  return arr;
 }
 
 module.exports = {
@@ -150,4 +169,6 @@ module.exports = {
   getSeparateString,
   getSeparateArray,
   dateFormat,
+  findChildId,
+  findObj,
 };

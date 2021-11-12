@@ -15,12 +15,14 @@
       if (_obj.id !== id) {
         if(_obj.children) {
           for (let v of _obj.children) {
+            console.log(v)
             findChild(v, id);
           }
         }
       }
       else {
         a = _obj;
+        console.log(a)
       }
       return a;
     }
@@ -52,6 +54,6 @@
   };
 
   console.log(findObj(obj, 3));
-  console.log(findChild(obj, []))
+  // console.log(findChild(obj, []))
 
 </script>

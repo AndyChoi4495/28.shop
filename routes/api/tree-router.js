@@ -1,17 +1,10 @@
 const path = require('path');
 const fs = require('fs-extra');
 const express = require('express');
-const {
-  Cate
-} = require('../../models');
+const { Cate } = require('../../models');
 const tree = require('../../middlewares/tree-mw');
-const {
-  Op
-} = require('sequelize');
-const {
-  findChildId,
-  findObj
-} = require('../../modules/util');
+const { Op } = require('sequelize');
+const { findChildId, findObj } = require('../../modules/util');
 const router = express.Router();
 
 router.get('/', async (req, res, next) => {
@@ -29,9 +22,7 @@ router.put('/', async (req, res, next) => {
       path.join(__dirname, '../../json/tree.json'),
       req.body.node
     );
-    res.status(200).json({
-      success: true
-    });
+    res.status(200).json({ success: true });
   } catch (err) {
     res.status(500).json(err);
   }
@@ -39,12 +30,8 @@ router.put('/', async (req, res, next) => {
 
 router.post('/', async (req, res, next) => {
   try {
-    await Cate.create({
-      id: req.body.id
-    });
-    res.status(200).json({
-      success: true
-    });
+    await Cate.create({ id: req.body.id });
+    res.status(200).json({ success: true });
   } catch (err) {
     res.status(500).json(err);
   }
@@ -53,22 +40,11 @@ router.post('/', async (req, res, next) => {
 router.delete('/', tree(), async (req, res, next) => {
   try {
     const treeArray = findChildId(findObj(req.tree, req.body.id), []);
-    await Cate.destroy({
-      where: {
-        id: {
-          [Op.or]: treeArray
-        }
-      }
-    });
-    res.status(200).json({
-      success: true
-    });
+    await Cate.destroy({ where: { id: { [Op.or]: treeArray } } });
+    res.status(200).json({ success: true });
   } catch (err) {
     res.status(500).json(err);
   }
 });
 
-module.exports = {
-  name: '/tree',
-  router
-};
+module.exports = { name: '/tree', router };
