@@ -12,7 +12,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^0.24.0",
     "bcrypt": "^5.0.1",
+    "cross-env": "^7.0.3",
     "dotenv": "^10.0.0",
     "ejs": "^3.1.6",
     "escape-html": "^1.0.3",
@@ -21,6 +23,7 @@
     "express-session": "^1.17.2",
     "fs-extra": "^10.0.0",
     "helmet": "^4.6.0",
+    "html-escaper": "^3.0.3",
     "http-errors": "^1.8.0",
     "lodash": "^4.17.21",
     "method-override": "^3.0.0",
@@ -34,6 +37,8 @@
     "passport-local": "^1.0.0",
     "rotating-file-stream": "^2.1.6",
     "sequelize": "^6.8.0",
+    "sequelize-cli": "^6.3.0",
+    "sharp": "^0.29.3",
     "uuid": "^8.3.2"
   }
 }
