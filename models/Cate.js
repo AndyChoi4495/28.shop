@@ -1,5 +1,7 @@
 const _ = require('lodash');
-const { dateFormat, relPath } = require('../modules/util');
+const fs = require('fs-extra');
+const path = require('path');
+const { findObj, findChildId } = require('../modules/util');
 
 module.exports = (sequelize, { DataTypes, Op }) => {
   const Cate = sequelize.define(
@@ -16,7 +18,7 @@ module.exports = (sequelize, { DataTypes, Op }) => {
       charset: 'utf8',
       collate: 'utf8_general_ci',
       tableName: 'cate',
-      paranoid: true,
+      paranoid: false,
     }
   );
 
@@ -29,6 +31,27 @@ module.exports = (sequelize, { DataTypes, Op }) => {
       onUpdate: 'CASCADE',
       onDelete: 'CASCADE',
     });
+  };
+
+  Cate.getAllCate = async function () {
+    try {
+      const tree = await fs.readJSON(path.join(__dirname, '../json/tree.json'));
+      return tree;
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  Cate.getChildren = async function (query) {
+    try {
+      let { cid: cateId } = query;
+      const allTree = await this.getAllCate();
+      const myTree = findObj(allTree[0], cateId);
+      const childTree = findChildId(myTree, []);
+      return { allTree, myTree, childTree };
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return Cate;

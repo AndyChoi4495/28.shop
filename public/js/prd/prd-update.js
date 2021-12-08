@@ -22,11 +22,15 @@ core.data = {
 
 $('#jstreeWrap')
   .jstree({ core: core, plugins: plugins })
-  .on('changed.jstree', onChangeTree)
-  .on('loaded.jstree', onLoadedTree);
+  .on('loaded.jstree', onLoadedTree)
+  .on('changed.jstree', onChangeTree);
 
 function onLoadedTree(e, data) {
   allData = data.instance._model.data;
+  console.log(Object.entries(allData));
+  Object.entries(allData).forEach(function (v) {
+    v[1].state.selected = false;
+  });
   $('#jstreeWrap').jstree('check_node', cateArr);
   onCloseModal();
 }
@@ -117,15 +121,15 @@ function onDeleteFile(id, el) {
   function onSucess(r) {
     if (r.data.code == 200) {
       var html =
-        '<input type="file" name="' +
+        '<div class="file-wrap"><input type="file" name="' +
         $(el).data('name') +
-        '" class="form-control-file mb-2" />';
+        '" class="form-control-file my-2" /></div>';
       $(el).parent().after(html);
       $(el).parent().remove();
     }
   }
   function onError(err) {
     console.log(err);
-    console.log(err.response);
+    if (err.response.data.msg) alert(err.response.data.msg);
   }
 }

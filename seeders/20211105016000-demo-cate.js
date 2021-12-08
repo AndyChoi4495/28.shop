@@ -1,8 +1,6 @@
 const fs = require('fs-extra');
 const path = require('path');
-const {
-  findAllId
-} = require('../modules/util');
+const { findAllId } = require('../modules/util');
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     const insertCate = [];

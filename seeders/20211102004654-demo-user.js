@@ -1,25 +1,36 @@
-'use strict';
 const numeral = require('numeral');
-const bcrypt = require('bcrypt')
-const {
-  BCRYPT_salt: salt,
-  BCRYPT_round: round
-} = process.env;
+const bcrypt = require('bcrypt');
+const { BCRYPT_SALT: salt, BCRYPT_ROUND: round } = process.env;
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     const insertUsers = [];
     insertUsers.push({
-      userid: 'yun4495',
+      userid: 'booldook',
       userpw: await bcrypt.hash('111111' + salt, Number(round)),
       username: '최고관리자',
-      email: 'yun4495@gmail.com',
-      tel: '010-7777-1111',
-      addrPost: '1234',
+      email: 'booldook@gmail.com',
+      tel: '010-3333-8888',
+      addrPost: '12345',
       addrRoad: '서울시 마포구 노고산로',
       addrJibun: '서울시 마포구 창천동',
       addrComment: '(창천동)',
       addrDetail: '7층',
       status: '9',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    insertUsers.push({
+      userid: 'demoUser',
+      userpw: await bcrypt.hash('111111' + salt, Number(round)),
+      username: '데모관리자',
+      email: 'demo@demo.com',
+      tel: '010-3333-8888',
+      addrPost: '12345',
+      addrRoad: '서울시 마포구 노고산로',
+      addrJibun: '서울시 마포구 창천동',
+      addrComment: '(창천동)',
+      addrDetail: '7층',
+      status: '7',
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -40,10 +51,10 @@ module.exports = {
         updatedAt: new Date(),
       });
     }
-    await queryInterface.bulkInsert('User', insertUsers);
+    await queryInterface.bulkInsert('user', insertUsers);
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.bulkDelete('User', null, {});
+    await queryInterface.bulkDelete('user', null, {});
   },
 };

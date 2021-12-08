@@ -9,32 +9,25 @@
 	라. kakao/naver는 passport-kakao(naver)가 done을 내장하고 있으므로 미들웨어로만 넣어준다.
 */
 
-
-const local = require('./local-strategy')
-const {
-	User
-} = require('../models')
+const local = require('./local-strategy');
+const { User } = require('../models');
 
 const serialize = (user, done) => {
-	done(null, user.id)
-}
+  done(null, user.id);
+};
 
 const deserialize = async (id, done) => {
-	try {
-		const user = await User.findOne({
-			where: {
-				id
-			}
-		})
-		if (user) done(null, user)
-		else done(null, false, '사용자 정보가 없습니다.')
-	} catch (err) {
-		done(err)
-	}
-}
+  try {
+    const user = await User.findOne({ where: { id } });
+    if (user) done(null, user);
+    else done(null, false, '사용자 정보가 없습니다.');
+  } catch (err) {
+    done(err);
+  }
+};
 
-module.exports = passport => {
-	passport.serializeUser(serialize)
-	passport.deserializeUser(deserialize)
-	local(passport)
-}
+module.exports = (passport) => {
+  passport.serializeUser(serialize);
+  passport.deserializeUser(deserialize);
+  local(passport);
+};

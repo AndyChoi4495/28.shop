@@ -3,6 +3,7 @@ const path = require('path');
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     const files = fs.readdirSync(path.join(__dirname, '../storages/211109'));
+    files.splice(files.indexOf('thumb'), 1);
     const insertFile = [];
     for (let i = 1; i <= 120; i++) {
       for (let j = 0; j < 3; j++) {
@@ -36,6 +37,17 @@ module.exports = {
         }
       }
     }
+    insertFile.push({
+      board_id: 241,
+      oriName: '메인배너1.jpg',
+      saveName: ,
+      mimeType: 'image/jpg',
+      fileType: 'I',
+      size: 12369,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    
     await queryInterface.bulkInsert('boardfile', insertFile);
   },
 

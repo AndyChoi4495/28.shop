@@ -1,15 +1,13 @@
 const fs = require('fs-extra');
 const path = require('path');
-const {
-  findLastId
-} = require('../modules/util');
+const { findLastId } = require('../modules/util');
 const _ = require('lodash');
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     const insertCatePrd = [];
     const [jsonFile] = fs.readJsonSync(path.join(__dirname, '../json/tree.json'));
     const cateIds = findLastId(jsonFile, []);
-    for (let i = 1; i <= 100; i++) {
+    for (let i = 1; i <= 1000; i++) {
       let cates = _.shuffle(cateIds);
       let len = Math.floor(Math.random() * cates.length);
       for (let j = 0; j < len; j++) {
